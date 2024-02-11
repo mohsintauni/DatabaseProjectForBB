@@ -1,0 +1,27 @@
+﻿CREATE TABLE [dbo].[tblDailyVisits] (
+    [DailyVisitID]      BIGINT          IDENTITY (1, 1) NOT NULL,
+    [PatientID]         BIGINT          NULL,
+    [VisitNbr]          INT             NULL,
+    [Dated]             DATETIME        CONSTRAINT [DF_tblDailyArrivals_Dated] DEFAULT (case when datepart(hour,getdate())<=(9) then dateadd(day,(-1),getdate()) else getdate() end) NULL,
+    [AGE]               INT             NULL,
+    [OtherPayment]      MONEY           NULL,
+    [PaymentFromDetail] MONEY           NULL,
+    [Discount]          MONEY           NULL,
+    [ReceivedAmount]    MONEY           NULL,
+    [AmountReturned]    MONEY           NULL,
+    [BalanceAmount]     AS              (case when isnull([OtherPayment],(0))<>(0) then (isnull([ReceivedAmount],(0))+isnull([AmountReturned],(0)))-isnull([OtherPayment],(0)) else (isnull([PaymentFromDetail],(0))-isnull([Discount],(0)))-isnull([Receivedamount],(0)) end),
+    [NetAmount]         AS              ((isnull([OtherPayment],(0))+isnull([PaymentFromDetail],(0)))-isnull([Discount],(0))),
+    [PaymentCode]       NVARCHAR (50)   NULL,
+    [UpdatedOn]         DATETIME        CONSTRAINT [DF_tblDailyArrivals_UpdatedOn] DEFAULT (getdate()) NULL,
+    [UpdatedBy]         NVARCHAR (50)   NULL,
+    [Remarks]           NVARCHAR (4000) NULL,
+    [IsActive]          BIT             CONSTRAINT [DF_tblDailyVisits_IsActive] DEFAULT ((1)) NULL,
+    [IsAdmit]           BIT             CONSTRAINT [DF_tblDailyVisits_IsAdmit] DEFAULT ((0)) NULL,
+    [AdmittedDate]      DATETIME        NULL,
+    [IsDischarged]      BIT             CONSTRAINT [DF_tblDailyVisits_IsDischarged] DEFAULT ((0)) NULL,
+    [DischargedDate]    DATETIME        NULL,
+    [CompanyPanelID]    INT             NULL,
+    CONSTRAINT [PK_tblDailyArrivals] PRIMARY KEY CLUSTERED ([DailyVisitID] ASC),
+    CONSTRAINT [FK_tblDailyVisits_tblPatients] FOREIGN KEY ([PatientID]) REFERENCES [dbo].[tblPatients] ([PatientID])
+);
+
